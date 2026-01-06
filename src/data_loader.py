@@ -123,3 +123,27 @@ def load_and_clean_all():
 # Entry point
 if __name__ == "__main__":
     load_and_clean_all()
+
+#summary stats (for paper)
+def get_summary_statistics(df):
+    """
+    Generates summary statistics for the merged dataset 
+    filtered to the 1990-2020 analysis period.
+    """
+    # 1. Filter for the analysis years
+    df_filtered = df[(df['Year'] >= 1990) & (df['Year'] <= 2020)].copy()
+    
+    # 2. Select only the data from 1990 to 2020 for each varibla
+    cols_to_include = [
+        'FLFP_Rate', 'GDP_Per_Capita', 'Years_Schooling', 
+        'Fertility_Rate', 'Mean_Age_Mothers', 'Fem_Emp_Pop_Ratio', 
+        'Fem_Unemp_Rate', 'Urban_Pop_Rate'
+    ]
+    
+    # Ensure only columns that actually exist in the df are used
+    existing_cols = [c for c in cols_to_include if c in df_filtered.columns]
+    
+    stats = df_filtered[existing_cols].describe().transpose()
+    stats.index.name = 'Variable'
+    
+    return stats

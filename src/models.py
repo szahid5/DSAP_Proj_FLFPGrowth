@@ -9,43 +9,59 @@ from sklearn.pipeline import Pipeline
 from sklearn.preprocessing import StandardScaler
 from sklearn.impute import SimpleImputer
 
-# Calculating growth and splitting
+import pandas as pd
+from sklearn.preprocessing import StandardScaler
+
 def prepare_time_series_split(df_clean):
-    # Year filtering
+    # 1. Year filtering 
     years_of_interest = [1991, 1996, 2001, 2006, 2011, 2016, 2021]
     df_panel = df_clean[df_clean['Year'].isin(years_of_interest)].copy()
 
-    # Critical sorting
-    df_panel = df_panel.sort_values(by=['Code', 'Year'])
-    df_panel = df_panel.sort_values(by=['Country', 'Year']) # Repeated sort (student style)
+    # 2. Critical sorting to ensure shift(-1) targets the correct year
+    df_panel = df_panel.sort_values(by=['Country', 'Year'])
 
-    # Growth formula
-    df_panel['Next_FLFP'] = df_panel.groupby('Code')['FLFP_Rate'].shift(-1)
+    # 3. Growth formula (Lead the Target)
+    df_panel['Next_FLFP'] = df_panel.groupby('Country')['FLFP_Rate'].shift(-1)
     df_panel['FLFP_Growth_Next_5Y'] = (df_panel['Next_FLFP'] - df_panel['FLFP_Rate']) / df_panel['FLFP_Rate']
 
-    # Drop nas
+    # 4. Handle Outliers and NAs
+    df_panel['FLFP_Growth_Next_5Y'] = df_panel['FLFP_Growth_Next_5Y'].clip(lower=-0.5, upper=0.5)
     df_model = df_panel.dropna(subset=['FLFP_Growth_Next_5Y']).copy()
 
-    # Columns
+    # 5. Define Feature and Target Columns
     X_cols = ['Fem_Emp_Pop_Ratio', 'Fem_Unemp_Rate', 'Mean_Age_Mothers', 
               'GDP_Per_Capita', 'Urban_Pop_Rate', 'Years_Schooling', 'Fertility_Rate']
     y_col = 'FLFP_Growth_Next_5Y'
 
-    # Manual mask splitting
+    # 6. Manual mask splitting (Temporal Validation as per proposal)
+    # Training: 1991, 1996, 2001, 2006 
+    # Testing: 2011, 2016
     train_mask = df_model['Year'] <= 2006
-    test_mask = df_model['Year'] >= 2011
+    test_mask = (df_model['Year'] >= 2011) & (df_model['Year'] <= 2016)
 
-    X_train = df_model.loc[train_mask, X_cols]
+    X_train_raw = df_model.loc[train_mask, X_cols]
     y_train = df_model.loc[train_mask, y_col]
-    X_test = df_model.loc[test_mask, X_cols]
+    X_test_raw = df_model.loc[test_mask, X_cols]
     y_test = df_model.loc[test_mask, y_col]
+
+    # 7. Scaling
+    scaler = StandardScaler()
+    X_train = pd.DataFrame(scaler.fit_transform(X_train_raw), columns=X_cols, index=X_train_raw.index)
+    X_test = pd.DataFrame(scaler.transform(X_test_raw), columns=X_cols, index=X_test_raw.index)
     
-    # Simple print check for the student
-    print("Train size:", X_train.shape)
-    print("Test size:", X_test.shape)
+    print(f"Temporal Split: Train years <= 2006 | Test years 2011-2016")
+    print(f"Train size: {X_train.shape} | Test size: {X_test.shape}")
+
+
+    # To get the exact number of contires in 'train' and 'test'
+    n_countries_train = df_model.loc[train_mask, 'Country'].nunique()
+    n_countries_test = df_model.loc[test_mask, 'Country'].nunique()
+
+    print(f"Total Unique Countries in Training: {n_countries_train}")
+    print(f"Total Unique Countries in Testing: {n_countries_test}")
 
     return X_train, X_test, y_train, y_test, X_cols
-
+    
 # Model training
 def train_and_evaluate(X_train, y_train, X_test, y_test):
     # List of models to try
