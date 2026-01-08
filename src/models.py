@@ -9,61 +9,63 @@ from sklearn.pipeline import Pipeline
 from sklearn.preprocessing import StandardScaler
 from sklearn.impute import SimpleImputer
 
-import pandas as pd
-from sklearn.preprocessing import StandardScaler
-
 def prepare_time_series_split(df_clean):
-    # 1. Year filtering 
+    # 1. Filter for 5-Year Intervals
     years_of_interest = [1991, 1996, 2001, 2006, 2011, 2016, 2021]
     df_panel = df_clean[df_clean['Year'].isin(years_of_interest)].copy()
 
-    # 2. Critical sorting to ensure shift(-1) targets the correct year
+    # 2. Critical sorting for time-series operations
     df_panel = df_panel.sort_values(by=['Country', 'Year'])
 
-    # 3. Growth formula (Lead the Target)
+    # 3. Feature Engineering: 5-Year Lag for WBL
+    # This checks if legal rights from 5 years ago impact growth today
+    if 'WBL_Legal_Score' in df_panel.columns:
+        df_panel['WBL_Lagged'] = df_panel.groupby('Country')['WBL_Legal_Score'].shift(1)
+
+    # 4. Growth formula (Target variable)
     df_panel['Next_FLFP'] = df_panel.groupby('Country')['FLFP_Rate'].shift(-1)
     df_panel['FLFP_Growth_Next_5Y'] = (df_panel['Next_FLFP'] - df_panel['FLFP_Rate']) / df_panel['FLFP_Rate']
 
-    # 4. Handle Outliers and NAs
+    # 5. Handle Outliers and NAs
     df_panel['FLFP_Growth_Next_5Y'] = df_panel['FLFP_Growth_Next_5Y'].clip(lower=-0.5, upper=0.5)
-    df_model = df_panel.dropna(subset=['FLFP_Growth_Next_5Y']).copy()
+    
+    # Drop rows missing the target OR the lagged legal data
+    cols_to_check = ['FLFP_Growth_Next_5Y']
+    if 'WBL_Lagged' in df_panel.columns:
+        cols_to_check.append('WBL_Lagged')
+        
+    df_model = df_panel.dropna(subset=cols_to_check).copy()
 
-    # 5. Define Feature and Target Columns
-    X_cols = ['Fem_Emp_Pop_Ratio', 'Fem_Unemp_Rate', 'Mean_Age_Mothers', 
-              'GDP_Per_Capita', 'Urban_Pop_Rate', 'Years_Schooling', 'Fertility_Rate']
+    # 6. Define Feature List (Including WBL_Lagged)
+    X_cols = [
+        'Fem_Emp_Pop_Ratio', 'Fem_Unemp_Rate', 'Mean_Age_Mothers', 
+        'GDP_Per_Capita', 'Urban_Pop_Rate', 'Years_Schooling', 'Fertility_Rate'
+    ]
+    
+    if 'WBL_Lagged' in df_model.columns:
+        X_cols.append('WBL_Lagged')
+
     y_col = 'FLFP_Growth_Next_5Y'
 
-    # 6. Manual mask splitting (Temporal Validation as per proposal)
-    # Training: 1991, 1996, 2001, 2006 
-    # Testing: 2011, 2016
-    train_mask = df_model['Year'] <= 2006
+    # 7. Temporal Split
+    # Training: 1996 - 2006 (Uses 1991 as lag)
+    # Testing: 2011 - 2016 (Predicts 2021 growth)
+    train_mask = (df_model['Year'] >= 1996) & (df_model['Year'] <= 2006)
     test_mask = (df_model['Year'] >= 2011) & (df_model['Year'] <= 2016)
 
-    X_train_raw = df_model.loc[train_mask, X_cols]
+    X_train = df_model.loc[train_mask, X_cols].copy()
     y_train = df_model.loc[train_mask, y_col]
-    X_test_raw = df_model.loc[test_mask, X_cols]
+    X_test = df_model.loc[test_mask, X_cols].copy()
     y_test = df_model.loc[test_mask, y_col]
-
-    X_train = X_train_raw.copy()
-    X_test = X_test_raw.copy()
-
     
-    print(f"Temporal Split: Train years <= 2006 | Test years 2011-2016")
+    print(f"Temporal Split: Train years 1996-2006 | Test years 2011-2016")
     print(f"Train size: {X_train.shape} | Test size: {X_test.shape}")
-
-
-    # To get the exact number of contires in 'train' and 'test'
-    n_countries_train = df_model.loc[train_mask, 'Country'].nunique()
-    n_countries_test = df_model.loc[test_mask, 'Country'].nunique()
-
-    print(f"Total Unique Countries in Training: {n_countries_train}")
-    print(f"Total Unique Countries in Testing: {n_countries_test}")
+    print(f"Features used: {X_cols}")
 
     return X_train, X_test, y_train, y_test, X_cols
-    
-# Model training
+
 def train_and_evaluate(X_train, y_train, X_test, y_test):
-    # List of models to try
+    # 8. Define Model Suite
     models = {
         "Linear Regression": LinearRegression(),
         "Ridge": Ridge(alpha=1.0),
@@ -72,43 +74,39 @@ def train_and_evaluate(X_train, y_train, X_test, y_test):
         "XGBoost": XGBRegressor(n_estimators=100, random_state=42)
     }
 
-    # Cross validation setup
     cv = KFold(n_splits=5, shuffle=True, random_state=42)
     results_list = []
 
-    # Loop through models
+    # 9. Pipeline Loop
     for name, m in models.items():
-        # Setup pipeline
         p = Pipeline([
             ('impute', SimpleImputer(strategy='mean')), 
             ('scale', StandardScaler()), 
             ('model', m)
         ])
         
-        # CV scores
+        # CV scores (Training performance)
         scores = cross_val_score(p, X_train, y_train, cv=cv, scoring='r2')
-        avg_cv = scores.mean()
         
-        # Training
+        # Training and Testing
         p.fit(X_train, y_train)
-        
-        # Predict and score
         preds = p.predict(X_test)
+        
         rmse = np.sqrt(mean_squared_error(y_test, preds))
         r2 = r2_score(y_test, preds)
         
-        # Manual dictionary storage
-        d = {
+        results_list.append({
             "Model": name,
-            "CV_R2": avg_cv,
+            "CV_R2": scores.mean(),
             "Test_RMSE": rmse,
             "Test_R2": r2,
             "Pipeline": p
-        }
-        results_list.append(d)
+        })
 
-    # Sort to find best
+    # 10. Find Best Pipeline
     res_df = pd.DataFrame(results_list).sort_values(by='Test_R2', ascending=False)
     best_p = res_df.iloc[0]['Pipeline']
+    
+    print(f"Best Model Found: {res_df.iloc[0]['Model']} (Test R2: {res_df.iloc[0]['Test_R2']:.4f})")
     
     return best_p, res_df
