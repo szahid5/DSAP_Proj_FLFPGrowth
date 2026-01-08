@@ -44,10 +44,9 @@ def prepare_time_series_split(df_clean):
     X_test_raw = df_model.loc[test_mask, X_cols]
     y_test = df_model.loc[test_mask, y_col]
 
-    # 7. Scaling
-    scaler = StandardScaler()
-    X_train = pd.DataFrame(scaler.fit_transform(X_train_raw), columns=X_cols, index=X_train_raw.index)
-    X_test = pd.DataFrame(scaler.transform(X_test_raw), columns=X_cols, index=X_test_raw.index)
+    X_train = X_train_raw.copy()
+    X_test = X_test_raw.copy()
+
     
     print(f"Temporal Split: Train years <= 2006 | Test years 2011-2016")
     print(f"Train size: {X_train.shape} | Test size: {X_test.shape}")

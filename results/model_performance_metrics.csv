@@ -1,11 +1,11 @@
 Model,CV_R2,Test_RMSE,Test_R2,Pipeline
-Ridge,0.10553926789624402,0.0794601657066477,-0.0024022232053089176,"Pipeline(steps=[('impute', SimpleImputer()), ('scale', StandardScaler()),
+Ridge,0.10553926789624395,0.07946016570664768,-0.0024022232053086956,"Pipeline(steps=[('impute', SimpleImputer()), ('scale', StandardScaler()),
                 ('model', Ridge())])"
-Linear Regression,0.10549328796658461,0.07946180597501809,-0.002443608108472217,"Pipeline(steps=[('impute', SimpleImputer()), ('scale', StandardScaler()),
+Linear Regression,0.10549328796658453,0.07946180597501809,-0.002443608108472217,"Pipeline(steps=[('impute', SimpleImputer()), ('scale', StandardScaler()),
                 ('model', LinearRegression())])"
 Random Forest,0.08774444304039794,0.07954738874303767,-0.00460409509833859,"Pipeline(steps=[('impute', SimpleImputer()), ('scale', StandardScaler()),
                 ('model', RandomForestRegressor(random_state=42))])"
-Lasso,0.051657831280230646,0.08022191565497999,-0.021713531918231332,"Pipeline(steps=[('impute', SimpleImputer()), ('scale', StandardScaler()),
+Lasso,0.05165783128023067,0.08022191565497999,-0.021713531918231332,"Pipeline(steps=[('impute', SimpleImputer()), ('scale', StandardScaler()),
                 ('model', Lasso(alpha=0.01))])"
 XGBoost,-0.010193686023718129,0.08366856136673907,-0.11139308831148131,"Pipeline(steps=[('impute', SimpleImputer()), ('scale', StandardScaler()),
                 ('model',
