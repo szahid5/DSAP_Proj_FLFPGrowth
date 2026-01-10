@@ -36,7 +36,7 @@ def prepare_time_series_split(df_clean):
         
     df_model = df_panel.dropna(subset=cols_to_check).copy()
 
-    # 6. Define Feature List (Including WBL_Lagged)
+    # 6. Define Feature List
     X_cols = [
         'Fem_Emp_Pop_Ratio', 'Fem_Unemp_Rate', 'Mean_Age_Mothers', 
         'GDP_Per_Capita', 'Urban_Pop_Rate', 'Years_Schooling', 'Fertility_Rate'

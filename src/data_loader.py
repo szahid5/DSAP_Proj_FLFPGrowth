@@ -16,7 +16,7 @@ def load_and_clean_all():
         "Urban Population": 'urban-and-rural-population.csv',
         "Female Unemployment": 'unemployment-rate-women.csv',
         "Years of Schooling": 'years-of-schooling.csv',
-        "WBL Index": 'WBLHistorical.xlsx' # New Excel File
+        "WBL Index": 'WBLHistorical.xlsx'
     }
 
     # 2. Robust File Processing
@@ -79,7 +79,7 @@ def load_and_clean_all():
         data_frames["Female Emp/Pop Ratio"], data_frames["FLFP Rates"],
         data_frames["GDP per Capita"], data_frames["Urban Population"],
         data_frames["Female Unemployment"], data_frames["Years of Schooling"],
-        data_frames["WBL Index"] # Added to merge list
+        data_frames["WBL Index"]
     ]
 
     def clean_and_prep(df, index):
@@ -120,7 +120,7 @@ def load_and_clean_all():
         "Employment to population": "Fem_Emp_Pop_Ratio", "Labor force participation": "FLFP_Rate",
         "GDP per capita": "GDP_Per_Capita", "Urban population": "Urban_Pop_Rate",
         "Unemployment, female": "Fem_Unemp_Rate", "years of schooling": "Years_Schooling",
-        "WBL_Score": "WBL_Legal_Score" # Added WBL to final rename
+        "WBL_Score": "WBL_Legal_Score" 
     }
     
     new_cols = []
