@@ -15,7 +15,7 @@ cd DSAP_Proj_FLFPGrowth
 Create the reproducible Conda environment using the provided environment.yml.
 
 conda env create -f environment.yml
-conda activate flfp_growth_env
+conda activate flfp_project
 
 3. Execute the Orchestrator
 
