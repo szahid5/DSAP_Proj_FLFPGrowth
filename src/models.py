@@ -49,7 +49,7 @@ def prepare_time_series_split(df_clean):
 
     # 7. Temporal Split
     # Training: 1996 - 2006 (Uses 1991 as lag)
-    # Testing: 2011 - 2016 (Predicts 2021 growth)
+    # Testing: 2011 - 2016 
     train_mask = (df_model['Year'] >= 1996) & (df_model['Year'] <= 2006)
     test_mask = (df_model['Year'] >= 2011) & (df_model['Year'] <= 2016)
 
