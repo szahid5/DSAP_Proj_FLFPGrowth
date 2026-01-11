@@ -1,21 +1,20 @@
 Model,CV_R2,Test_RMSE,Test_R2,Pipeline
-Ridge,0.09446801024585139,0.08024232255101368,0.016750074847285634,"Pipeline(steps=[('impute', SimpleImputer()), ('scale', StandardScaler()),
+Ridge,0.08797674330268083,0.07897316103805005,0.009847400685606633,"Pipeline(steps=[('impute', SimpleImputer()), ('scale', StandardScaler()),
                 ('model', Ridge())])"
-Linear Regression,0.09409625190590276,0.08024657248791876,0.0166459188190905,"Pipeline(steps=[('impute', SimpleImputer()), ('scale', StandardScaler()),
+Linear Regression,0.0878552807731986,0.07897482431445543,0.009805692470374772,"Pipeline(steps=[('impute', SimpleImputer()), ('scale', StandardScaler()),
                 ('model', LinearRegression())])"
-Random Forest,-0.02891936295085633,0.08113750904729959,-0.00531064712265894,"Pipeline(steps=[('impute', SimpleImputer()), ('scale', StandardScaler()),
-                ('model', RandomForestRegressor(random_state=42))])"
-Lasso,0.06330130573174579,0.08128543244940112,-0.008979592102025258,"Pipeline(steps=[('impute', SimpleImputer()), ('scale', StandardScaler()),
+Lasso,0.044925058349939005,0.07990480170022084,-0.013651913407373373,"Pipeline(steps=[('impute', SimpleImputer()), ('scale', StandardScaler()),
                 ('model', Lasso(alpha=0.01))])"
-XGBoost,-0.1778074284537018,0.08479072384174072,-0.09787684738400393,"Pipeline(steps=[('impute', SimpleImputer()), ('scale', StandardScaler()),
+Random Forest,0.05743064152522035,0.08008198015874957,-0.018152178633811245,"Pipeline(steps=[('impute', SimpleImputer()), ('scale', StandardScaler()),
+                ('model', RandomForestRegressor(random_state=42))])"
+XGBoost,-0.11723369278458162,0.08351812048443183,-0.10739998415384266,"Pipeline(steps=[('impute', SimpleImputer()), ('scale', StandardScaler()),
                 ('model',
                  XGBRegressor(base_score=None, booster=None, callbacks=None,
                               colsample_bylevel=None, colsample_bynode=None,
                               colsample_bytree=None, device=None,
                               early_stopping_rounds=None,
                               enable_categorical=False, eval_metric=None,
-                              feature_types=None, feature_weights=None,
-                              gamma=None, grow_policy=None,
+                              feature_types=None, gamma=None, grow_policy=None,
                               importance_type=None,
                               interaction_constraints=None, learning_rate=None,
                               max_bin=None, max_cat_threshold=None,
@@ -24,4 +23,4 @@ XGBoost,-0.1778074284537018,0.08479072384174072,-0.09787684738400393,"Pipeline(s
                               min_child_weight=None, missing=nan,
                               monotone_constraints=None, multi_strategy=None,
                               n_estimators=100, n_jobs=None,
-                              num_parallel_tree=None, ...))])"
+                              num_parallel_tree=None, random_state=42, ...))])"

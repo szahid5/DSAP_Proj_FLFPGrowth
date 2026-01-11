@@ -8,3 +8,6 @@ In detailed terms, AI assisted me in separating data loading, modeling, and eval
 
 Git Troubleshooting:
 Laslty, AI helped me resolve authentication issues related to Personal Access Tokens (PAT) and remote URL configurations as well as other complications I ran into regarding GitHub. 
+
+Readme.md
+Gemini was also used to help write the README.md file
